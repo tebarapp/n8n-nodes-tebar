@@ -1,0 +1,88 @@
+{
+	"name": "Tebar: post a photo or video from a form",
+	"nodes": [
+		{
+			"parameters": {
+				"content": "## Post from a form\nOpen the form, write a caption and attach one photo or video. The file goes to your Tebar media library, then Tebar posts it right away.\n\n**Setup**\n1. Open **Create post** and pick your Tebar credential and accounts. Choose accounts that accept media (Instagram, Threads, TikTok, Facebook, ...).\n2. Activate the workflow and open the form's production URL.",
+				"height": 260,
+				"width": 420
+			},
+			"id": "8b0c7a52-6f0e-4b6f-9d0e-1f2a3b4c5d01",
+			"name": "Sticky Note",
+			"type": "n8n-nodes-base.stickyNote",
+			"typeVersion": 1,
+			"position": [-80, -340]
+		},
+		{
+			"parameters": {
+				"formTitle": "New post",
+				"formDescription": "Write a caption and attach one photo or video. It is posted right away.",
+				"formFields": {
+					"values": [
+						{
+							"fieldLabel": "Caption",
+							"fieldName": "caption",
+							"fieldType": "textarea",
+							"requiredField": true
+						},
+						{
+							"fieldLabel": "Photo or video",
+							"fieldName": "media",
+							"fieldType": "file",
+							"multipleFiles": false,
+							"acceptFileTypes": ".jpg,.jpeg,.png,.mp4,.mov",
+							"requiredField": true
+						}
+					]
+				},
+				"options": {
+					"appendAttribution": false,
+					"respondWithOptions": {
+						"values": {
+							"formSubmittedText": "Sent to Tebar. Check the post in your Tebar dashboard."
+						}
+					}
+				}
+			},
+			"id": "8b0c7a52-6f0e-4b6f-9d0e-1f2a3b4c5d02",
+			"name": "Form",
+			"type": "n8n-nodes-base.formTrigger",
+			"typeVersion": 2.6,
+			"position": [0, 0],
+			"webhookId": "8b0c7a52-6f0e-4b6f-9d0e-1f2a3b4c5d0a"
+		},
+		{
+			"parameters": {
+				"resource": "media",
+				"operation": "upload",
+				"binaryPropertyName": "media"
+			},
+			"id": "8b0c7a52-6f0e-4b6f-9d0e-1f2a3b4c5d03",
+			"name": "Upload media",
+			"type": "n8n-nodes-tebar.tebar",
+			"typeVersion": 1,
+			"position": [240, 0]
+		},
+		{
+			"parameters": {
+				"accountIds": [],
+				"content": "={{ $('Form').item.json.caption }}",
+				"additionalFields": {
+					"idempotencyKey": "=n8n-form-{{ $execution.id }}",
+					"media_ids": "={{ $json.id }}"
+				}
+			},
+			"id": "8b0c7a52-6f0e-4b6f-9d0e-1f2a3b4c5d04",
+			"name": "Create post",
+			"type": "n8n-nodes-tebar.tebar",
+			"typeVersion": 1,
+			"position": [480, 0]
+		}
+	],
+	"connections": {
+		"Form": { "main": [[{ "node": "Upload media", "type": "main", "index": 0 }]] },
+		"Upload media": { "main": [[{ "node": "Create post", "type": "main", "index": 0 }]] }
+	},
+	"settings": { "executionOrder": "v1" },
+	"pinData": {}
+}

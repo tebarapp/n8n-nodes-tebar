@@ -93,12 +93,18 @@ Tebar only delivers to `https` URLs on port 443 with a public host. n8n Cloud wo
 
 ## Usage
 
-Example workflows:
+Ready-to-import workflows are in [`examples/`](examples). In n8n, open a new workflow, choose **⋯ → Import from URL**, and paste the file's raw link. Each one has a note with the fields to fill in.
 
-- **RSS to social:** RSS Feed Trigger → Tebar (Post: Create) with the item title and link.
-- **Image generator to Instagram:** an image node → Tebar (Media: Upload) → Tebar (Post: Create) with the media ID.
-- **Failed post alert:** Tebar Trigger (`post.failed`) → Slack or email with `data.error_message`.
-- **Comment helper:** Tebar Trigger (`comment.created`) → an AI model drafts a reply → a human approves → Tebar (Comment: Reply).
+| Workflow                                                             | What it does                                                                                          |
+| -------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| [Post from a form](examples/form-to-post.json)                       | An n8n form takes a caption and one photo or video, uploads the file to Tebar, and posts it           |
+| [RSS to social](examples/rss-to-post.json)                           | Every hour, each new feed item becomes a post with its title and link                                 |
+| [Failed post alert](examples/failed-post-alert.json)                 | Tebar Trigger (`post.failed`) sends a Telegram message with the platform and the reason               |
+| [Unreplied comments digest](examples/unreplied-comments-digest.json) | Every morning, Telegram gets the 20 newest comments waiting for a reply (nothing when there are none) |
+
+Raw link format: `https://raw.githubusercontent.com/tebarapp/n8n-nodes-tebar/main/examples/<file>.json`.
+
+The Telegram examples send in HTML mode and escape comment text, because n8n's Telegram node uses Markdown by default and a username such as `a_b` would make Telegram reject the message.
 
 The Tebar node can also be used as a tool by n8n AI agents.
 

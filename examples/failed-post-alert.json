@@ -1,0 +1,49 @@
+{
+	"name": "Tebar: Telegram alert when a post fails",
+	"nodes": [
+		{
+			"parameters": {
+				"content": "## Failed post alert\nWhen a post fails on an account (after Tebar's last retry), you get a Telegram message with the platform and the reason.\n\n**Setup**\n1. **Post failed**: pick a Tebar credential made with an owner API key (not limited to one workspace).\n2. **Send to Telegram**: pick your Telegram bot credential and put your chat ID.\n3. Activate the workflow. Tebar only sends to https URLs, so self-hosted n8n needs a public `WEBHOOK_URL`.",
+				"height": 300,
+				"width": 460
+			},
+			"id": "5a7e9c1b-3d2f-4e6a-8b9c-0d1e2f3a4b01",
+			"name": "Sticky Note",
+			"type": "n8n-nodes-base.stickyNote",
+			"typeVersion": 1,
+			"position": [-80, -380]
+		},
+		{
+			"parameters": {
+				"events": ["post.failed"]
+			},
+			"id": "5a7e9c1b-3d2f-4e6a-8b9c-0d1e2f3a4b02",
+			"name": "Post failed",
+			"type": "n8n-nodes-tebar.tebarTrigger",
+			"typeVersion": 1,
+			"position": [0, 0],
+			"webhookId": "5a7e9c1b-3d2f-4e6a-8b9c-0d1e2f3a4b0a"
+		},
+		{
+			"parameters": {
+				"chatId": "YOUR_CHAT_ID",
+				"text": "=<b>Post failed on {{ $json.data.platform }}</b>\n\nReason: {{ String($json.data.error_message ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') }} ({{ $json.data.error_code }})\n\nOpen Tebar: https://publish.tebar.app/posts?view=list&amp;section=history",
+				"additionalFields": {
+					"appendAttribution": false,
+					"parse_mode": "HTML"
+				}
+			},
+			"id": "5a7e9c1b-3d2f-4e6a-8b9c-0d1e2f3a4b03",
+			"name": "Send to Telegram",
+			"type": "n8n-nodes-base.telegram",
+			"typeVersion": 1.2,
+			"position": [260, 0],
+			"webhookId": "5a7e9c1b-3d2f-4e6a-8b9c-0d1e2f3a4b0b"
+		}
+	],
+	"connections": {
+		"Post failed": { "main": [[{ "node": "Send to Telegram", "type": "main", "index": 0 }]] }
+	},
+	"settings": { "executionOrder": "v1" },
+	"pinData": {}
+}

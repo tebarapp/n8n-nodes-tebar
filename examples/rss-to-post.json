@@ -1,0 +1,47 @@
+{
+	"name": "Tebar: share new blog posts from an RSS feed",
+	"nodes": [
+		{
+			"parameters": {
+				"content": "## RSS to social\nEvery hour, each new item in the feed becomes a post with its title and link. Items already in the feed when you activate are skipped.\n\n**Setup**\n1. Put your feed URL in **New item in feed**.\n2. Open **Create post**, pick your Tebar credential and text-friendly accounts (Threads, X, LinkedIn, Facebook, Telegram, Discord). Instagram and TikTok need media, so they will fail here.\n3. Activate the workflow.",
+				"height": 300,
+				"width": 440
+			},
+			"id": "2f6d1c3e-8a4b-4c5d-9e6f-7a8b9c0d1e01",
+			"name": "Sticky Note",
+			"type": "n8n-nodes-base.stickyNote",
+			"typeVersion": 1,
+			"position": [-80, -380]
+		},
+		{
+			"parameters": {
+				"pollTimes": { "item": [{ "mode": "everyHour" }] },
+				"feedUrl": "https://tebar.app/blog/rss.xml"
+			},
+			"id": "2f6d1c3e-8a4b-4c5d-9e6f-7a8b9c0d1e02",
+			"name": "New item in feed",
+			"type": "n8n-nodes-base.rssFeedReadTrigger",
+			"typeVersion": 1,
+			"position": [0, 0]
+		},
+		{
+			"parameters": {
+				"accountIds": [],
+				"content": "={{ $json.title }}\n\n{{ $json.link }}",
+				"additionalFields": {
+					"idempotencyKey": "=rss-{{ $json.link.hash('sha256').slice(0, 40) }}"
+				}
+			},
+			"id": "2f6d1c3e-8a4b-4c5d-9e6f-7a8b9c0d1e03",
+			"name": "Create post",
+			"type": "n8n-nodes-tebar.tebar",
+			"typeVersion": 1,
+			"position": [260, 0]
+		}
+	],
+	"connections": {
+		"New item in feed": { "main": [[{ "node": "Create post", "type": "main", "index": 0 }]] }
+	},
+	"settings": { "executionOrder": "v1" },
+	"pinData": {}
+}

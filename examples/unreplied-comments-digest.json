@@ -1,0 +1,76 @@
+{
+	"name": "Tebar: daily Telegram digest of unreplied comments",
+	"nodes": [
+		{
+			"parameters": {
+				"content": "## Unreplied comments digest\nEvery morning at 9:00 (workflow timezone), Telegram gets the 20 newest comments you have not replied to. No message when there are none.\n\n**Setup**\n1. **Unreplied comments**: pick your Tebar credential.\n2. **Send to Telegram**: pick your Telegram bot credential and put your chat ID.\n3. Activate the workflow.",
+				"height": 260,
+				"width": 440
+			},
+			"id": "c4d5e6f7-1a2b-4c3d-8e9f-0a1b2c3d4e01",
+			"name": "Sticky Note",
+			"type": "n8n-nodes-base.stickyNote",
+			"typeVersion": 1,
+			"position": [-80, -340]
+		},
+		{
+			"parameters": {
+				"rule": { "interval": [{ "field": "days", "triggerAtHour": 9 }] }
+			},
+			"id": "c4d5e6f7-1a2b-4c3d-8e9f-0a1b2c3d4e02",
+			"name": "Every day at 9:00",
+			"type": "n8n-nodes-base.scheduleTrigger",
+			"typeVersion": 1.2,
+			"position": [0, 0]
+		},
+		{
+			"parameters": {
+				"resource": "comment",
+				"operation": "getAll",
+				"limit": 20,
+				"filters": { "reply_status": "unreplied" }
+			},
+			"id": "c4d5e6f7-1a2b-4c3d-8e9f-0a1b2c3d4e03",
+			"name": "Unreplied comments",
+			"type": "n8n-nodes-tebar.tebar",
+			"typeVersion": 1,
+			"position": [240, 0]
+		},
+		{
+			"parameters": {
+				"jsCode": "// Comment text and usernames are written by strangers. The message is sent in Telegram's HTML\n// mode, so escape & < > to show them as plain text (Markdown would break on a username like a_b).\nconst escape = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\n\nconst comments = $input.all().map((item) => item.json).filter((c) => c.id);\nif (comments.length === 0) return [];\n\nconst lines = comments.map((c) => {\n  const who = c.author_username ? '@' + c.author_username : 'Someone';\n  const account = c.account?.username ? '@' + c.account.username : (c.account?.display_name ?? '');\n  const text = (c.text ?? '').replace(/\\s+/g, ' ').trim().slice(0, 160) || '(no text)';\n  return `- <b>${escape(who)}</b> on ${escape(c.account?.platform)} ${escape(account)}: ${escape(text)}`;\n});\n\n// Telegram allows 4096 characters per message: add whole lines only, so no tag is cut in half.\nconst header = `<b>${comments.length} comment(s) waiting for a reply</b>\\n`;\nconst footer = '\\nReply in Tebar: https://publish.tebar.app/comments';\nlet body = '';\nlet shown = 0;\nfor (const line of lines) {\n  if (header.length + body.length + line.length + footer.length + 40 > 4096) break;\n  body += '\\n' + line;\n  shown++;\n}\nif (shown < lines.length) body += `\\n...and ${lines.length - shown} more`;\n\nreturn [{ json: { message: header + body + '\\n' + footer } }];"
+			},
+			"id": "c4d5e6f7-1a2b-4c3d-8e9f-0a1b2c3d4e04",
+			"name": "Build message",
+			"type": "n8n-nodes-base.code",
+			"typeVersion": 2,
+			"position": [480, 0]
+		},
+		{
+			"parameters": {
+				"chatId": "YOUR_CHAT_ID",
+				"text": "={{ $json.message }}",
+				"additionalFields": {
+					"appendAttribution": false,
+					"disable_web_page_preview": true,
+					"parse_mode": "HTML"
+				}
+			},
+			"id": "c4d5e6f7-1a2b-4c3d-8e9f-0a1b2c3d4e05",
+			"name": "Send to Telegram",
+			"type": "n8n-nodes-base.telegram",
+			"typeVersion": 1.2,
+			"position": [720, 0],
+			"webhookId": "c4d5e6f7-1a2b-4c3d-8e9f-0a1b2c3d4e0b"
+		}
+	],
+	"connections": {
+		"Every day at 9:00": {
+			"main": [[{ "node": "Unreplied comments", "type": "main", "index": 0 }]]
+		},
+		"Unreplied comments": { "main": [[{ "node": "Build message", "type": "main", "index": 0 }]] },
+		"Build message": { "main": [[{ "node": "Send to Telegram", "type": "main", "index": 0 }]] }
+	},
+	"settings": { "executionOrder": "v1" },
+	"pinData": {}
+}

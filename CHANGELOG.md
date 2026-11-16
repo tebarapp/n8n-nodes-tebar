@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.2
+
+- Smaller package: the TypeScript build cache is no longer published.
+- First release published through npm trusted publishing (OIDC) instead of a token.
+
 ## 0.1.1
 
 - First release on npm. Same nodes as 0.1.0, which was tagged but never published (npm needs `access: public` to publish a new package with provenance).

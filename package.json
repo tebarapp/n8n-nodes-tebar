@@ -1,6 +1,6 @@
 {
 	"name": "n8n-nodes-tebar",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "n8n nodes for Tebar: publish and schedule social media posts, manage comments, and react to Tebar events",
 	"license": "MIT",
 	"homepage": "https://tebar.app",
@@ -31,6 +31,9 @@
 		"lint:fix": "n8n-node lint --fix",
 		"release": "n8n-node release",
 		"prepublishOnly": "n8n-node prerelease"
+	},
+	"publishConfig": {
+		"access": "public"
 	},
 	"files": [
 		"dist"

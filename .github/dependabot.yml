@@ -1,5 +1,7 @@
 version: 2
 updates:
+  # Major versions (TypeScript, ESLint, @n8n/node-cli, release-it) can break the n8n-node
+  # build or lint, so they are upgraded by hand and tested in n8n first.
   - package-ecosystem: 'npm'
     directory: '/'
     schedule:
@@ -7,6 +9,9 @@ updates:
     groups:
       minor-and-patch:
         update-types: ['minor', 'patch']
+    ignore:
+      - dependency-name: '*'
+        update-types: ['version-update:semver-major']
 
   - package-ecosystem: 'github-actions'
     directory: '/'
